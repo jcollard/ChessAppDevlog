@@ -40,8 +40,8 @@ And now the long version...
     - [Creating Input Tests](#creating-input-tests)
     - [Replaying the Game](#replaying-the-game)
     - [Problems Creating Output Files](#problems-creating-output-files)
-  - [Extracting Local Functions](#extracting-local-functions)
-  - [Moving to an Object Oriented Design](#moving-to-an-object-oriented-design)
+  - [Part 2: Extracting Local Functions](#part-2-extracting-local-functions)
+  - [Part 3: Moving to an Object Oriented Design](#part-3-moving-to-an-object-oriented-design)
     - [The IPiece Interface](#the-ipiece-interface)
     - [The AbstractPiece Class](#the-abstractpiece-class)
     - [Refactoring Logic Checks](#refactoring-logic-checks)
@@ -50,7 +50,7 @@ And now the long version...
       - [Knight](#knight)
       - [Rook, Bishop, and Queen](#rook-bishop-and-queen)
       - [Pawn](#pawn)
-  - [Removing Global Variables](#removing-global-variables)
+  - [Part 4: Removing Global Variables](#part-4-removing-global-variables)
   - [Last Thoughts / What's next?](#last-thoughts--whats-next)
 
 
@@ -64,7 +64,7 @@ how they should test for bugs:
 
 ![Image](imgs/original-post.png)
 
-[Original
+Here is a [Link to the Original
 Post](https://www.reddit.com/r/learncsharp/comments/yvk2xe/finished_my_first_app_but_unsure_how_to_test_for/)
 
 
@@ -126,7 +126,7 @@ Although I do not recommend it, if you would like to watch me sweat my way
 through a full refactor of the project, you can do so here: [YouTube
 Link](https://www.youtube.com/watch?v=ZAEtUKu3Q-4&list=PLBdNYhNqW67lfpwfIJ1ne_l4cHtuAHU6g)
 
-The refactor consisted of 5 major steps, each of which had several smaller
+The refactor consisted of 4 major steps, each of which had several smaller
 pieces. I will start with a high level overview of each step here and then go
 into details in the subsequent sections.
 
@@ -155,9 +155,6 @@ into details in the subsequent sections.
    step 2 which I was dying to remove. After getting the general OO design
    working, I was able to refactor all of the global state and replace it with
    calls to the `GameState` object that I had been slowly building up.
-
-5. Finally, I went through and performed a variety of stylistic refactors that
-   were mostly insignificant but made me happy.
 
 ## Part 1: Building an Input / Output Test
 
@@ -271,7 +268,7 @@ each change.
 With that said, I am very happy I had the test as it did save me against several
 refactors that I otherwise would have likely spent hours trying to debug.
 
-## Extracting Local Functions
+## Part 2: Extracting Local Functions
 
 With the basic test available, the next step was to try and pull as much as I
 could out of the ~700 lines of code that were within the `Main` method. The goal
@@ -445,7 +442,7 @@ static void Main(string[] args)
 }
 ```
 
-## Moving to an Object Oriented Design
+## Part 3: Moving to an Object Oriented Design
 
 With all of the methods pulled out, I could start refactoring the code to use an
 Object Oriented design.
@@ -1186,7 +1183,7 @@ protected override bool SubLogic((int row, int col) start, (int row, int col) ta
 }
 ```
 
-## Removing Global Variables
+## Part 4: Removing Global Variables
 
 Having refactored all of the `SubLogic` methods to have no references to global
 state, it was time to attempt to remove them from the Main program. 
