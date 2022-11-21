@@ -1,6 +1,6 @@
 # Refactoring a Chess Program in C#
 
-In this article, I want to take you with me on a journey in which I refactor a
+I want to take you with me on a journey in which I refactor a
 Chess program that was written by a novice coder. The original source code is
 spaghetti code with the majority of the functionality crammed into a single main
 method. But, I really do not want to judge the original code. We have all been
