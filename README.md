@@ -1,61 +1,74 @@
 # Refactoring a Chess Program in C#
 
-In this article, I take you through my journey of refactoring a Chess program
-written by a novice coder. The original source code is absolutely spaghetti with almost all of the functionality crammed into a single main method. 
+In this article, I want to take you with me on a journey in which I refactor a
+Chess program that was written by a novice coder. The original source code is
+spaghetti code with the majority of the functionality crammed into a single main
+method. But, I really do not want to judge the original code. We have all been
+there at one point or another, especially in the early stages of learning to
+program.
 
-But, I can't judge too much! I have always wanted to program a Chess game but
-have never managed to actually put the time in to do it. So, let me start by
-saying that I think it is amazing that there is a person out there who decided
-to tackle this as a first project!
+Honestly, I have always wanted to program a Chess game but have never managed to
+put in the time to do it. So, let me start by saying that I think it is amazing
+that there is a person out there who decided to tackle this as a first project!
 
 Second, a huge amount of kudos to anyone willing to post their code on the
 Internet and ask for help.
 
-And finally, a huge thanks to **u/RayanWIP** for giving me permission to dissect their code on my live stream, create a tutorial video, and write up this article.
+And finally, a huge thanks to **u/RayanWIP** for giving me permission to dissect
+their code on my live stream, create a tutorial video, and write up this
+article.
 
 So... let's get to it!
 
-## tl;dr;
+# tl;dr;
 
 I never intended to write so many words... but here we are.
 
-In essence, I took a Chess program with a ~700 line main method, [Link to Original](https://github.com/jcollard/Chessapp/tree/pre-refactor), and refactored it to use an Object Oriented design [Link to Result](https://github.com/jcollard/Chessapp/tree/oo-refactor-part5).
+The 10 second version: I took a Chess program with a 700-ish line **Main**
+method, [Link to
+Original](https://github.com/jcollard/Chessapp/tree/pre-refactor), and did my
+best to refactor it into code that uses an Object Oriented design: [Link to
+Result](https://github.com/jcollard/Chessapp/tree/oo-refactor-part5).
 
-I live streamed the entire refactor so I could go back and chop it into a tutorial video (pending creation).
+I live streamed the entire refactor so I could go back and chop it into a
+tutorial video (pending creation). This article goes into the details of my
+experience with that refactor.
 
-You can watch the full (unabridged) live stream here:[LINK](https://www.youtube.com/watch?v=ZAEtUKu3Q-4&list=PLBdNYhNqW67lfpwfIJ1ne_l4cHtuAHU6g)
+You can watch the full (unabridged) live stream
+here:[LINK](https://www.youtube.com/watch?v=ZAEtUKu3Q-4&list=PLBdNYhNqW67lfpwfIJ1ne_l4cHtuAHU6g)
 
 And now the long version...
 
-## Table of Contents
+# Table of Contents
 
 - [Refactoring a Chess Program in C#](#refactoring-a-chess-program-in-c)
-  - [tl;dr;](#tldr)
-  - [Table of Contents](#table-of-contents)
-  - [The original post](#the-original-post)
-  - [My Response](#my-response)
-  - [Overview of the Refactor](#overview-of-the-refactor)
-  - [Part 1: Building an Input / Output Test](#part-1-building-an-input--output-test)
-    - [The Plan](#the-plan)
-    - [Creating Input Tests](#creating-input-tests)
-    - [Replaying the Game](#replaying-the-game)
-    - [Problems Creating Output Files](#problems-creating-output-files)
-  - [Part 2: Extracting Local Functions](#part-2-extracting-local-functions)
-  - [Part 3: Moving to an Object Oriented Design](#part-3-moving-to-an-object-oriented-design)
-    - [The IPiece Interface](#the-ipiece-interface)
-    - [The AbstractPiece Class](#the-abstractpiece-class)
-    - [Refactoring Logic Checks](#refactoring-logic-checks)
-    - [Refactoring SubLogic for each Piece](#refactoring-sublogic-for-each-piece)
-      - [King](#king)
-      - [Knight](#knight)
-      - [Rook, Bishop, and Queen](#rook-bishop-and-queen)
-      - [Pawn](#pawn)
-  - [Part 4: Removing Global Variables](#part-4-removing-global-variables)
-  - [Last Thoughts / What's next?](#last-thoughts--whats-next)
+- [tl;dr;](#tldr)
+- [Table of Contents](#table-of-contents)
+- [The original post](#the-original-post)
+- [My Response](#my-response)
+- [How I got here](#how-i-got-here)
+- [Overview of the Refactor](#overview-of-the-refactor)
+- [Part 1: Building an Input / Output Test](#part-1-building-an-input--output-test)
+  - [The Plan](#the-plan)
+  - [Creating Input Tests](#creating-input-tests)
+  - [Replaying the Game](#replaying-the-game)
+  - [Problems Creating Output Files](#problems-creating-output-files)
+- [Part 2: Extracting Local Functions](#part-2-extracting-local-functions)
+- [Part 3: Moving to an Object Oriented Design](#part-3-moving-to-an-object-oriented-design)
+  - [The IPiece Interface](#the-ipiece-interface)
+  - [The AbstractPiece Class](#the-abstractpiece-class)
+  - [Refactoring Logic Checks](#refactoring-logic-checks)
+  - [Refactoring SubLogic for each Piece](#refactoring-sublogic-for-each-piece)
+    - [King](#king)
+    - [Knight](#knight)
+    - [Rook, Bishop, and Queen](#rook-bishop-and-queen)
+    - [Pawn](#pawn)
+- [Part 4: Removing Global Variables](#part-4-removing-global-variables)
+- [Last Thoughts / What's next?](#last-thoughts--whats-next)
 
 
 
-## The original post
+# The original post
 
 A few days ago a user by the name of **/u/RayanWIP** shared a console based
 Chess program they had written on
@@ -84,16 +97,20 @@ The second recommended doing some research into software testing terms:
 
 ![Testing Terms](imgs/unit-testing.png)
 
-Although short, this response felt reasonable. Much to the disdain of my
-students, I typically require students to use and write unit tests. However,
-writing testable code is an art in its own. So, I decided I would take a look at
-the source code of the project and see if I could give some advice on how to
-test the project.
+Although short, this response felt reasonable and to the point. When I first saw
+the post, I planned to write something similar. 
 
-## My Response
+Anyone who knows me, knows that I typically require my students to use and write
+unit tests on all of their projects (much to their disdain). 
 
-Looking through the source code, it quickly became apparent that this particular
-code would need to be refactored if there was any hope of unit testing it.
+Since another user had already suggested this, I thought it might be nice to
+look over the source code and point out a project specific example of how they
+might specifically go about unit testing it.
+
+# My Response
+
+Looking through the source code, it quickly became apparent that this code base
+was not in a state that could be unit tested.
 
 The main challenge was that the source code was split between two classes:
 
@@ -105,80 +122,91 @@ and...
 **Program** - Which contained a single **Main** method which contained
 everything else (No judgement, we've all done it at some point). 
 
+Without any "units" there are no "unit tests".
+
 That said, the **Main** method did contain several locally defined function that
-I was hopeful could be pulled out to be slightly more testable. However, at this
-point, I felt that it might be more productive for **/u/RayanWIP** to focus
-their study on growing their Object Oriented skills rather than specifically
-digging into testing code.
+I was hopeful could be pulled out and those methods might be testable.
+
+However, at this point, I felt that it might be more productive for
+**/u/RayanWIP** to focus their study on developing their Object Oriented skills
+rather than specifically digging into testing code.
 
 With that in mind, I wrote my response:
 
 ![My Response](imgs/my-response.png)
 
-## Overview of the Refactor
+# How I got here
 
-It truly was inspiring to see a young programmer attempting to write a Chess
-program and I thought this could be a good opportunity to show how someone might
-approach refactoring a messy code base. So, with **u/RayanWIP**'s permission, I
-live streamed myself working through the process.
+It was inspiring to see a young programmer attempting to write a Chess program.
+There was a ton of good stuff happening in the code from a purely logical stand
+point. You could actually run the program and play a game of "hot-seat" Chess
+with another person.
+
+Here is the screen that comes up when you start the program:
+
+![Chess Board](imgs/chess-screenshot.png)
+
+With that in mind, I thought this could be a good opportunity to demonstrate how
+I might approach refactoring a messy code base. So, with **u/RayanWIP**'s
+permission, I live recorded and streamed myself working through the process in
+the hopes that I might be able to edit down to a homework video for my students
+to watch.
 
 Although I do not recommend it, if you would like to watch me sweat my way
-through a full refactor of the project, you can do so here: [YouTube
+through the entire 12 hours of refactoring, you can do so here: [YouTube
 Link](https://www.youtube.com/watch?v=ZAEtUKu3Q-4&list=PLBdNYhNqW67lfpwfIJ1ne_l4cHtuAHU6g)
 
-The refactor consisted of 4 major steps, each of which had several smaller
-pieces. I will start with a high level overview of each step here and then go
+# Overview of the Refactor
+
+The refactor consisted of 4 major parts, each of which had several smaller
+steps. I will start with a high level overview of each part here and then go
 into details in the subsequent sections.
 
 1. Typically, one of the main goals of refactoring is to rewrite a program to be
    more manageable **WITHOUT** modifying the behavior. With this in mind, the
-   first step was to try and create an input / output test so I could give
-   myself confidence that the modified version of the program continued to work
-   the same as the original.
+   first thing I created was an input / output test so I could give myself
+   confidence that any modifications I made didn't break the existing program.
 
-2. Extract all of the locally defined functions as static methods to reduce the
-   complexity of the Main method and define a "Game Loop" that what easier for
-   me to understand.
+2. With a basic input / output test, I extracted all of the locally defined
+   functions as static methods in an attempt to manage the complexity within the
+   **Main** method as well as define a simplified "Game Loop".
 
-3. Within the Main class there were two functions for each piece which defined
-   the set of moves a piece could take as well as the logic of those moves. For
-   example, `queenLogic` and `pawnLogic` as well as `queenMoves` and
-   `pawnMoves`. Within these methods there was a ton of repeated code blocks.
-   The next big step was to refactor this code to use an Object Oriented design
-   so I could take advantage of inheritance and polymorphism to manage
-   complexity. In the end, this resulted in 3 main classes: `GameState`,
-   `IPiece`, and `AbstractPiece`. As well as 6 relatively concise subclasses:
-   `PawnPiece`, `RookPiece` `KnightPiece`, `BishopPiece`, `QueenPiece`, and
-   `KingPiece`.
+3. With a somewhat manageable set of static methods, I moved on to removing
+   repeated code by refactoring existing methods into a class hierarchy. This
+   resulted in 3 main ideas: `GameState`, `IPiece`, and `AbstractPiece`. As well
+   as 6 relatively concise subclasses: `PawnPiece`, `RookPiece`, `KnightPiece`,
+   `BishopPiece`, `QueenPiece`, and `KingPiece.
 
-4. To keep the game working, I had introduced a handful of global variables in
-   step 2 which I was dying to remove. After getting the general OO design
-   working, I was able to refactor all of the global state and replace it with
-   calls to the `GameState` object that I had been slowly building up.
+4. In the step 2, I begrudgingly introduced a handful of public global variables
+   which I had been dying to remove. With a solid OO design in place, I was
+   finally able to delete the remaining global state and add it "nicely" into
+   the `GameState` class.
 
-## Part 1: Building an Input / Output Test
+# Part 1: Building an Input / Output Test
 
 Typically, one of the main goals of refactoring is to rewrite a program to be
 more manageable **WITHOUT** modifying the behavior. With this in mind, the first
-step was to try and create an input / output test so I could give myself
-confidence that the modified version of the program continued to work the same
-as the original.
+thing I created was an input / output test so I could give myself confidence
+that any modifications I made didn't break the existing program.
 
-### The Plan
+## The Plan
 
-Because the program accepted inputs from the keyboard and then output to the
-terminal, I thought it would be easy to build out a few tests in which I fed the
-program a text file as input and recorded the output to a text file. After each
-code change, I would run the program with the same inputs and then perform a
-simple `diff` of each output. If the `diff` showed no change, it would give me
-confidence that the program was not broken. Simple enough, right?
+Because the program accepts inputs from the keyboard and outputs text to the
+terminal, I thought it would be easy to "record" my inputs by writing them to a text file (`input.txt`) and
+store the programs output in another text file (`output.txt`).
 
-### Creating Input Tests
+With these two files, I would then be able to feed a modified version of the program
+the "recorded" `input.txt` file and verify that the newly produced output it matches the
+original `output.txt`.
+
+Simple enough, right?
+
+## Creating Input Tests
 
 To start out, I wrote a simple static `Utils` class that contained a
-`ReadLine()` method that I would use to replace calls to `Console.ReadLine()`.
-In addition to reading in user input, it would also output the inputs to a text
-file that I could use as my input tests later.
+`ReadLine()` method that would "record" inputs. Then, I would replace all calls
+to `Console.ReadLine()` with my `Utils.ReadLine()` method. Here is the method I
+came up with:
 
 ```csharp
 public static string ReadLine()
@@ -193,25 +221,30 @@ public static string ReadLine()
 
 I then manually played through a very long and very bad chess game in which I
 moved every piece at least once, tested bad inputs, and tried to find edge cases
-that were not implemented.
+that were not implemented. This is an incredibly boring portion of the live
+stream that no one should ever endure.
 
-### Replaying the Game
+## Replaying the Game
 
 After completing the game, I moved the `temp_inputs.txt` file containing all of
-the inputs to a file called `input_2.txt` (I spent way too much time making an
-`input_1.txt` by hand).
+the inputs to a file called `input_2.txt` (Yeah, I foolishly created an `input_1.txt` file by hand before writing my `Utils.ReadLine()` method).
 
-Then, I passed the `input_2.txt` file as input to the program:
+I then piped `input_2.txt` as input to the program:
 
 ```
 $ dotnet run < input_2.txt
 ```
 
-Woo-hoo! It worked! I now had a way to replay a previously played game.
+It's a little hard to see in the GIF below BUT this is the game playing itself
+as fast as my console can print it to the screen.
 
-### Problems Creating Output Files
+![Fast Test](imgs/FastTest.gif)
 
-Next, I tried to create an output file using the orignal code so I would have a
+Woo-hoo! It worked! I now had a way to replay a previously recorded games.
+
+## Problems Creating Output Files
+
+Next, I tried to create an output file using the original code so I would have a
 "baseline" to compare all changes with. To do this, I ran the following command,
 which "pipes" all of the output to a file called `output_2.txt`
 
@@ -223,8 +256,7 @@ Unfortunately, this resulted in several exceptions related to unsupported
 console methods. In this case `Console.Clear()` and
 `Console.SetCursorPosition()`.
 
-I attempted to solve this using the `Utils` class by writing two methods that I
-would substitute for the original calls:
+I attempted to solve this by adding a few more methods to the `Utils` class:
 
 ```csharp
 public static void TryClear()
@@ -252,30 +284,36 @@ public static void SetCursorPosition(int left, int top)
 }
 ```
 
-At first, this seemed like it was going to work. If I ran the program, it was
-happy to pipe the output to the `output_2.txt` file.
+At first, this seemed like it was going to work. Running the program
+and piping the output to `output_2.txt` did not result in any exceptions.
 
-However, simply running the command twice would sometimes result in two
-different `output_2.txt` files. The changes were mostly insignificant... extra
-whitespace / the order the cursor position was being set would be different. 
+However, simply running the command twice would sometimes result in differing
+files. The changes were mostly insignificant... extra
+whitespace / the order the cursor position was being set would be different. But
+this was enough that I knew this wouldn't be reliable.
 
-I'm embarrassed to say that it wasn't able to fix this issue and ended up
-scrapping the `diff` idea and instead relied on watching the game play out in my
-terminal after each change to try and "eye-ball" the differences. It wasn't
-great BUT it was **SOMETHING** to help give me a little bit of confidence after
-each change.
+I'm embarrassed to say that I wasn't able to fix this issue and eventually gave up
+on the idea of comparing the original output with the modified output.
 
-With that said, I am very happy I had the test as it did save me against several
-refactors that I otherwise would have likely spent hours trying to debug.
+Instead, I decided I would have to watch the game play out in the terminal after 
+each change and do my best to "eye-ball" the differences. I wasn't happy with this but
+at least it was **SOMETHING** that would provide me with a small amount of confidence
+after each change.
 
-## Part 2: Extracting Local Functions
+With that said, I am very happy I had this simple test as it did save me from
+myself against several failed refactors. Without it, I almost certainly would
+have spent hours trying to debug weird edge cases.
 
-With the basic test available, the next step was to try and pull as much as I
-could out of the ~700 lines of code that were within the `Main` method. The goal
-was to try and identify where I could abstract and simplify components.
+# Part 2: Extracting Local Functions
 
-I started at the top of the `Main` method and worked my way down. Each time I
-encountered a local function, I would attempt to extract it as a static method.
+With the basic test available, the next step was to try and pull as much code as I
+could manage out of the 700-ish line **Main** method.
+
+While doing this, my goal was to identify duplicate code as well as spots for
+abstraction and simplification.
+
+Starting at the top of the **Main** method I worked my way down. Each time I
+encountered a locally defined function, I would attempt to extract it as a static method.
 
 For example:
 
@@ -337,11 +375,16 @@ static void Main(string[] args)
 }
 ```
 
-Each time I would extract a method, I would run my simple input / output test to
-verify the program did not break. The majority of the methods could be removed
-by simply extracting them and adding a `static` to the method. In a few
-instances, I was forced to make a `static` variable that could be used between
-the methods.
+With each extraction, I would run my simple input / output test to
+verify the program was continuing to produce the same output.
+
+The majority of the locally defined functions could be easily extracted via a
+cut, paste, and adding the `static` keyword in front of it. 
+
+In a few instances, there were local variables that were being used across
+multiple functions. This forced me to also extract them as `static` variables,
+which made me feel a bit dirty. But, I kept in the back of my mind that this was
+temporary and I would eventually remove them.
 
 Here were the methods and variables that were straight forward to extract:
 
@@ -372,14 +415,14 @@ static void queenmoves(int[] selectindex);
 static bool queenlogic(int[] selectindex, int[] tileindex);
 ```
 
-Unfortunately, at this point the main method was still very long mostly due to a
-local function `tileselect()` which handled the logic for selecting the piece to
-move, the location for moving the piece, moving the piece, and checking if the
-game was finished.
+Unfortunately, at this point the main method was still quite long (200-ish
+lines) mostly due to a local function `tileselect()` which handled the logic for
+selecting the piece to move, displaying possible moves, selecting the position
+to move to, moving the piece, and checking if the game was finished.
 
 Extracting this method directly would require me to make several variables
-global that I really felt should be local so I decided to break it up into
-several methods: `IsGameOver`, `PieceSelect`, `tileselect` and `MovePiece`.
+global. I really was torn and ultimately decided to refactor this method into
+4 smaller methods: `IsGameOver`, `PieceSelect`, `tileselect` and `MovePiece`.
 
 Here are the signatures of the methods I added / modified:
 
@@ -401,12 +444,14 @@ static string tileselect(ref string select, ref int[] address);
 private static void MovePiece(string select, string tile)
 ```
 
-One thing to note here that was really annoying to me was that I wrote the
-`tileselect` method to have two reference parameters. I was running into trouble
-with these variables being updated within the method but ultimately needed them
-outside the method. This was a concession I made to get the input / output test
-to work quickly. Ultimately, I came back to this in the end and cleaned it up
-but it haunted me for the majority of the refactor.
+I was not happy about was the use of the two reference parameters for the
+`tileselect` method. In my opinion, this was almost as bad as just making those variables
+global... maybe worse. 
+
+However, I was stubborn, didn't want to make them global, and was tired of my test
+failing. So, I gave in and made this concession to make it a little easier to get
+input / output test passing. I made a note of how much I hated what I had done here
+and I promised myself I would come back to clean it up later.
 
 With these new changes, I was finally able to refactor the **Main** method to
 contain a relatively simple game loop:
@@ -438,13 +483,14 @@ static void Main(string[] args)
 }
 ```
 
-## Part 3: Moving to an Object Oriented Design
+# Part 3: Moving to an Object Oriented Design
 
-With all of the methods pulled out, I could start refactoring the code to use an
-Object Oriented design.
+With all of the methods extracted, I was ready to start thinking about how I
+could leverage an Object Oriented design to remove repeated code and manage the
+complexity of the program.
 
 You may have noticed in the previous section there were several methods that had
-identical signatures with the exception of the name:
+near identical signatures:
 
 ```csharp
 // These methods calculate and display the possible moves a piece can make given they are in the selected position.
@@ -463,8 +509,14 @@ static bool rooklogic(int[] selectindex, int[] tileindex);
 static bool queenlogic(int[] selectindex, int[] tileindex);
 ```
 
-Looking at where these methods are called, I found a series of `if` statements
-that select the method to call given a string:
+These methods were used in a few places throughout the code typically as part of a
+large branching set of `if` / `else if` / `else` statements. 
+
+For example, after
+the player selects a piece to move and the possible locations that piece can move
+are highlighted on the screen.
+
+The section of code that does this can be seen below:
 
 ```csharp
 static string tileselect(ref string select, ref int[] address)
@@ -489,22 +541,25 @@ static string tileselect(ref string select, ref int[] address)
 }
 ```
 
-When you see code like this, it is a clear indicator that you should be using
-inheritance and polymorphism to reduce your complexity. In the end, I hoped to
-write something that eliminates all of the if statements with something like
-this:
+When you see code like this, it is an indicator that you could be using
+inheritance and polymorphism to manage the complexity of selecting which method
+to perform. 
+
+As soon as I saw this chunk of code, I knew that I would eventually want to
+refactor it to something like this:
 
 ```csharp
 IPiece piece = GetPiece(address);
-piece.Moves();
+piece.ShowMoves();
 ```
 
-### The IPiece Interface
+## The IPiece Interface
 
-To do this, I first needed to define the interface `IPiece`. I knew I was going
-to need to have a method for `Logic` and `GetMoves` but thought it might also be
-useful to have a few additional properties. Here is the initial interface I came
-up with:
+To do this, I first needed to define the interface `IPiece`. I knew I would
+need a method for `Logic` and `GetMoves` but, thinking a bit ahead, I also
+decided it would be useful to define a few additional properties. 
+
+Here is the initial interface I came up with:
 
 ```csharp
 public interface IPiece 
@@ -528,11 +583,13 @@ public interface IPiece
 }
 ```
 
-With the interface defined, I took a crack at creating a `PawnPiece` that would
-implement the `IPiece` interface. I started with a constructor that would allow
-me to specify the symbol, color, and position. As well as copying the code
-directly from the `pawnmoves` and `pawnlogic` with some minor alterations as the
-body of the `GetMoves` and `Logic` methods:
+With the interface defined, I took a crack at creating a `PawnPiece` which
+implemented the `IPiece` interface. 
+
+The constructor for `PawnPiece` allowed me to specify the symbol, color, and position properties.
+
+Next, I copied the code from `pawnmoves` and `pawnlogic` into `PawnPiece.GetMoves` and `PawnPiece.Logic`
+and applied a few tweaks to make the compiler happy with my altered method signature:
 
 ```csharp
 // Full source here: https://github.com/jcollard/Chessapp/blob/e298305bdefc7fd144dc1775b98c5f6a72b1f8ba/ConsoleApp9/Piece/PawnPiece.cs
@@ -543,34 +600,34 @@ public class PawnPiece : IPiece
 
     public PawnPiece(string symbol, PieceColor color, (int, int) position)
     {
-        this._symbol = symbol;
-        this._color = color;
-        this._position = position;
+        // initialize the properties
     }
 
     public List<(int, int)> GetMoves((int row, int col) pos)
     {
-        // omitted for brevity
+        // copy / pasted from `pawnmoves`
     }
 
     public bool Logic((int row, int col) start, (int row, int col) target)
     {
-        // omitted for brevity
+        // copy / pasted from `pawnlogic`
     }
 }
 ```
 
 Unfortunately, the `pawnmoves` and `pawnlogic` methods relied on a few of the
 static variables from the Main class. This resulted in making them public global
-variables to get the code to compile. Eventually, I would need to eliminate
-these but for now they were helpful.
+variables to appease the compiler.
 
-In addition to creating the `PawnPiece` class, I needed a way to easily access
-the pieces by their symbol on the board (e.g. "p1", "P3", "p5", etc...). To do
-this, I created a `GameState` class which would provide a method for getting a
-piece base on its string symbol. Under the hood, I chose to use a `Dictionary`
-to allow quick lookups.
+Making note that I would eventually need to eliminate these global variables, I 
+created a `GameState` class that would eventually serve as a non-static replacement.
 
+For now, it simply instantiated 16 pawns (8 for each side of the board) and 
+provided access to them via a `GetPiece` method. For quick lookup, I utilized
+C#'s `Dictionary` class to map each pieces string symbol (e.g. "p1", "P3", "p5", etc...)
+to the piece itself.
+
+Here is the GameState class at this point in the refactor:
 ```csharp
 public class GameState
 {
@@ -600,7 +657,7 @@ public class GameState
 ```
 
 Finally, it was time to refactor any code that used `pawnlogic` or `pawnmoves`
-and delete those methods. The code segment from above became:
+and delete those methods. The code segment that displayed possible moves became:
 
 ```csharp
 IPiece? piece = gameState.GetPiece(select);
@@ -619,11 +676,11 @@ else
 ```
 
 Again, with each change I ran the input / output test I created to give myself
-some amount of confidence that I had not completely broken the program. And in
-several instances, I **DID** break something. Having this quick feedback allowed
-me to undo what I had just changed and try again.
+some confidence that I had not completely broken the program. And in several
+instances, I **DID** break something. Having this quick feedback allowed me to
+undo what I had just changed and try again.
 
-### The AbstractPiece Class
+## The AbstractPiece Class
 
 Initially, I simply created an `IPiece` interface and wrote a single subclass
 `PawnPiece`. However, very early on, it became clear that there was a ton of
@@ -676,8 +733,10 @@ static void bishopmoves(int[] selectindex)
 ```
 
 Notice any similarities? With the exception of the names and a call to the
-associated `logic` method, they are identical. This means that we should be able
-to put this in our `AbstractPiece` class and drop it in all of the subclasses.
+associated `logic` method, they are identical. This means that we should do our best
+to reuse this code.  
+
+To do this, I wrote an `AbstractPiece` class which implements `IPiece` and has a single `GetMoves` method.
 
 Here is the first version of the `AbstractPiece` class I wrote:
 
@@ -724,7 +783,7 @@ public abstract class AbstractPiece : IPiece
 }
 ```
 
-And the resulting refactor of the `PawnPiece` class:
+Next, I refactored `PawnPiece` to extend `AbstractPiece`:
 
 ```csharp
 // full source here: https://github.com/jcollard/Chessapp/blob/d88aaaea97829c081eb54e6413df83259757feb2/ConsoleApp9/Piece/PawnPiece.cs
@@ -740,12 +799,10 @@ public class PawnPiece : AbstractPiece
 }
 ```
 
-Because `PawnPiece` extends `AbstractPiece` all I need to include is the `Logic`
-method.
+With this change, each subclass of `AbstractPiece` only needs to implement an appropriate `Logic` method.
 
-With this in place, I create a class for each of the remaining 5 pieces, add
-them to `GameState` and delete the associated `logic` and `move` methods from
-the Main class.
+With this in place, I create a class for each of the remaining 5 pieces, added
+the appropriate instances to `GameState`.
 
 Here is the updated `GameState`:
 
@@ -795,13 +852,12 @@ public class GameState
 }
 ```
 
-One thing to note is that the `GetPiece` method no longer returns a **nullable**
-`IPiece`. With all of the pieces now in the `GameState`, I throw an exception if
-an invalid symbol is passed to `GetPiece`.
+One thing to note in the code above is that `GetPiece` no longer returns a **nullable**
+`IPiece`. With all of the pieces now in the `GameState`, I decided it was appropriate to 
+throw an exception if an invalid symbol was passed to `GetPiece`.
 
-The resulting code for showing the possible moves a piece can make is now
-reduced to two lines and 0 if statements (one if you count the check in
-`GetPiece`).
+The resulting code for showing the possible moves a piece can make was now
+reduced to two lines and 0 if statements:
 
 ```csharp
 IPiece piece = gameState.GetPiece(select);
@@ -810,7 +866,9 @@ piece.GetMoves((address[0], address[1]));
 
 Not bad!
 
-### Refactoring Logic Checks
+Additionally, I was able to delete all of the `moves` and `logic` methods from the **Main** class.
+
+## Refactoring Logic Checks
 
 While copying each of the `logic` methods into the appropriate subclass of
 `AbstractPiece`, I noticed that all of them started with the exact same check:
@@ -818,11 +876,15 @@ While copying each of the `logic` methods into the appropriate subclass of
 ```csharp
 public override bool Logic((int row, int col) start, (int row, int col) target)
 {
-    if (Program.changes.BoardLayout[target.row, target.col] == Program.changes.BoardLayout[target.row, target.col].ToUpper() && Program.changes.BoardLayout[start.row, start.col] == Program.changes.BoardLayout[start.row, start.col].ToUpper() && !Program.changes.BoardLayout[target.row, target.col].Contains(' '))
+    if (Program.changes.BoardLayout[target.row, target.col] == Program.changes.BoardLayout[target.row, target.col].ToUpper() && 
+        Program.changes.BoardLayout[start.row, start.col] == Program.changes.BoardLayout[start.row, start.col].ToUpper() && 
+        !Program.changes.BoardLayout[target.row, target.col].Contains(' '))
     {
         return false;
     }
-    if (Program.changes.BoardLayout[target.row, target.col] == Program.changes.BoardLayout[target.row, target.col].ToLower() && Program.changes.BoardLayout[start.row, start.col] == Program.changes.BoardLayout[start.row, start.col].ToLower() && !Program.changes.BoardLayout[target.row, target.col].Contains(' '))
+    if (Program.changes.BoardLayout[target.row, target.col] == Program.changes.BoardLayout[target.row, target.col].ToLower() && 
+        Program.changes.BoardLayout[start.row, start.col] == Program.changes.BoardLayout[start.row, start.col].ToLower() && 
+        !Program.changes.BoardLayout[target.row, target.col].Contains(' '))
     {
         return false;
     }
@@ -845,7 +907,7 @@ This allowed me to refactor the code above to:
 ```csharp
 public bool Logic((int, int) start, (int, int) target, GameState gameState)
 {
-    if(!GameState.IsEmpty(target) && !this.IsEnemyPiece(target, gameState))
+    if(!gameState.IsEmpty(target) && !this.IsEnemyPiece(target, gameState))
     {
         return false;
     }
@@ -857,12 +919,12 @@ public bool Logic((int, int) start, (int, int) target, GameState gameState)
 ```
 
 Notice that I did have to alter the signature of `Logic` to accept a `GameState`
-object. But, it really simplified the check and made it much more readable.
+object. But, I felt this was okay as it made the code much more readable.
 Additionally, the logic for `IsEmpty` and `IsEnemyPiece` were relatively simple:
 
 ```csharp
 // In GameState
-public static bool IsEmpty((int row, int col) pos)
+public bool IsEmpty((int row, int col) pos)
 {
     string targetSymbol = Program.changes.BoardLayout[pos.row, pos.col];
     return targetSymbol.Contains(' ');
@@ -881,12 +943,12 @@ protected bool IsEnemyPiece((int row, int col) target, GameState gameState)
 ```
 
 With this change in place, I still had the generic check at the start of each
-`Logic` method. So, I decided to refactor this by putting it in the
-`AbstractPiece` class and defining an abstract `SubLogic` method. The idea here
-is that all common checks should go in `Logic` and any unique checks should be
-placed in the sub classes `SubLogic` method. 
+`Logic` method. So, I decided to move this check into `AbstractPiece.Logic` and 
+and provide an abstract `SubLogic` method that each sub class would implement. The idea here
+is that all common checks should go in `AbstractPiece.Logic` and any piece-specific checks should be
+implemented in the subclasses `SubLogic` method. 
 
-Here was the final `AbstractPiece.Logic` method:
+Here is the final `AbstractPiece.Logic` method:
 
 ```csharp
 // Full source here: https://github.com/jcollard/Chessapp/blob/master/ConsoleApp9/Piece/AbstractPiece.cs
@@ -916,14 +978,13 @@ protected abstract bool SubLogic((int row, int col) targetPos);
 An important thing to note here is that `SubLogic` is not defined in `IPiece`
 and is a `protected` method which allows it to be used by subclasses.
 
-### Refactoring SubLogic for each Piece
+## Refactoring SubLogic for each Piece
 
 Looking at each pieces sub logic was a challenge for me. I had to really think
-hard and try to reason through what all of the branching logic was doing. It was
-a lot but I did my best to simplify the logic to use as few if statements as
-possible. Here was my process for each piece:
+hard and try to reason through what each branch of logic was doing. It was
+quite painful and I felt it best to simplify the logic in each subclass. Below is how I refactored each piece:
 
-#### King
+### King
 
 The King can move into any adjacent space both orthogonally and diagonally. In
 the original program **u/RayanWIP** did not allow for castling and did not
@@ -970,7 +1031,7 @@ protected override bool SubLogic((int row, int col) start, (int row, int col) ta
 
 ```
 
-#### Knight
+### Knight
 
 The knight moves in an "L" shape on the board and can "hop" over pieces. This
 means that it must move 2 spaces in one direction and 1 space in the other (a
@@ -1014,13 +1075,14 @@ protected override bool SubLogic((int row, int col) start, (int row, int col) ta
 }
 ```
 
-#### Rook, Bishop, and Queen
+### Rook, Bishop, and Queen
 
-The Rook, Bishop, and Queen all shared some commonalities. Specifically that the
-piece can move a long distance across the board as long as there are no pieces
-along that path. To help with this, I created a helper method `IsPathClear`
-which takes in two positions that are either orthogonal or diagonal to each
-other and returns `true` if the path is in fact clear.
+The Rook, Bishop, and Queen shared some amount of logic so I've lumped them together here. 
+
+More specifically, these pieces can move many spaces on the board orthogonally
+or diagonally as long as they don't "jump" over another piece.  To help with
+this, I wrote a helper method `IsPathClear` which takes in two positions and
+checks if the path between them is empty.
 
 Additionally, I wrote two more helpers `IsDiagonal` and `IsOrthogonal` which
 determine if two positions are diagonal or orthogonal to each other.
@@ -1063,9 +1125,10 @@ protected override bool SubLogic((int row, int col) target)
 }
 ```
 
-#### Pawn
+### Pawn
 
-The pawn is probably the most complex piece in the game: 
+The pawn is probably the most complex piece in the game as it has several conditional rules for movement:
+
 1. Typically, it can only move forward one space. BUT it cannot attack forward. 
 2. If a piece is occupying a space diagonally in front of it, it can capture it
    and move diagonally. 
@@ -1077,7 +1140,7 @@ The pawn is probably the most complex piece in the game:
    another pawn that passed it under *SOME* circumstances: [Full Rules at
    Chess.com](https://www.chess.com/terms/en-passant)
 
-Lucky for me, **u/RayanWIP** didn't implement 4 or 5 so I can "safely" ignore
+Lucky for me, **u/RayanWIP** didn't implement 4 or 5 so I "safely" ignored
 them in my refactor.
 
 ```csharp
@@ -1179,15 +1242,19 @@ protected override bool SubLogic((int row, int col) start, (int row, int col) ta
 }
 ```
 
-## Part 4: Removing Global Variables
+Perhaps some day if I'm feeling up to it, I might try to refactor this logic
+again to be more readable. But, this was the best I could do at the time.
+
+# Part 4: Removing Global Variables
 
 Having refactored all of the `SubLogic` methods to have no references to global
-state, it was time to attempt to remove them from the Main program. 
+state, I really wanted to remove the global variables from the **Main** class.
 
-This involved selecting each of the global variables and eliminating all of the
-places it was referenced throughout the Main program and replacing it with a
-method call to `GameState`. In the end, this resulted in the following
-`GameState` API:
+This involved selecting each of the global variables and slowly eliminating all
+references to them throughout the code base and replace them with a call to an
+instance of `GameState`. As I did this, I added necessary methods and logic to
+the `GameState` class. Below is the `GameState` API after removing all global
+state.
 
 ```csharp
 /// Full Source: https://github.com/jcollard/Chessapp/blob/master/ConsoleApp9/GameState.cs
@@ -1239,12 +1306,7 @@ public class GameState
     internal void ClearPiece((int row, int col) pos);
 }
 ```
-
-One thing to note here is that there are MANY more methods than the original
-project BUT each method is much smaller and ideally easier to understand. These
-are the "units" in a unit test.
-
-And finally, the Main class:
+And finally, the **Main** class:
 
 ```csharp
 /// Full source: https://github.com/jcollard/Chessapp/blob/master/ConsoleApp9/Program.cs
@@ -1298,7 +1360,7 @@ public class Program
 }
 ```
 
-## Last Thoughts / What's next?
+# Last Thoughts / What's next?
 
 Well... that's it! I refactored a Chess program in C# to use a more Object
 Oriented style. It was a really fun experiment and I'm hoping to rework some
@@ -1307,8 +1369,14 @@ version of this into a class project / practice exercise in one of my courses.
 It really is a tough skill to learn and apply but you can end up with something
 that is much more maintainable without the need to start over from scratch.
 
-The main goal here was to create a program that could be unit tested. So, I
-guess the next step would be to write some unit tests.
+
+The main goal here was to create a program that could be unit tested and 
+it should be noted here that there are MANY more methods than the original
+project. However, each method is much smaller and (hopefully) easier to understand. 
+These are the "units" that can now be tested.
+
+So... I guess the next step would be to write a test suite of unit tests. But, I'll
+leave that for another time.
 
 I hope someone gets some use out of this.
 
