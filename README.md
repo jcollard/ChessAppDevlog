@@ -26,6 +26,35 @@ I live streamed the entire refactor so I could go back and chop it into a tutori
 You can watch the full (unabridged) live stream here:[LINK](https://www.youtube.com/watch?v=ZAEtUKu3Q-4&list=PLBdNYhNqW67lfpwfIJ1ne_l4cHtuAHU6g)
 
 And now the long version...
+
+## Table of Contents
+
+- [Refactoring a Chess Program in C#](#refactoring-a-chess-program-in-c)
+  - [tl;dr;](#tldr)
+  - [Table of Contents](#table-of-contents)
+  - [The original post](#the-original-post)
+  - [My Response](#my-response)
+  - [Overview of the Refactor](#overview-of-the-refactor)
+  - [Part 1: Building an Input / Output Test](#part-1-building-an-input--output-test)
+    - [The Plan](#the-plan)
+    - [Creating Input Tests](#creating-input-tests)
+    - [Replaying the Game](#replaying-the-game)
+    - [Problems Creating Output Files](#problems-creating-output-files)
+  - [Extracting Local Functions](#extracting-local-functions)
+  - [Moving to an Object Oriented Design](#moving-to-an-object-oriented-design)
+    - [The IPiece Interface](#the-ipiece-interface)
+    - [The AbstractPiece Class](#the-abstractpiece-class)
+    - [Refactoring Logic Checks](#refactoring-logic-checks)
+    - [Refactoring SubLogic for each Piece](#refactoring-sublogic-for-each-piece)
+      - [King](#king)
+      - [Knight](#knight)
+      - [Rook, Bishop, and Queen](#rook-bishop-and-queen)
+      - [Pawn](#pawn)
+  - [Removing Global Variables](#removing-global-variables)
+  - [Last Thoughts / What's next?](#last-thoughts--whats-next)
+
+
+
 ## The original post
 
 A few days ago a user by the name of **/u/RayanWIP** shared a console based
