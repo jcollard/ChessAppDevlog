@@ -395,13 +395,9 @@ static (string, int[] address) PieceSelect();
 /// Prompts the user to select a tile to move to.
 static string tileselect(ref string select, ref int[] address);
 
-/// <summary>
 /// Updates the board by putting a blank on the selected pieces location
 /// and placing it in the tile. If a piece was in the tile, it is added to the deadpieces
 /// list (captured).
-/// </summary>
-/// <param name="select"></param>
-/// <param name="tile"></param>
 private static void MovePiece(string select, string tile)
 ```
 
@@ -1281,35 +1277,23 @@ public class Program
         Console.WriteLine($"{winner} is the winner!");
     }
 
-    /// <summary>
     /// Displays an error message to the user.
-    /// </summary>
     private static void DisplayError(string message);
 
-    /// <summary>
     /// Prompts the user to select a piece to move. Returns the selected piece and the row / col of that piece.
-    /// </summary>
     private static IPiece PieceSelect();
  
-    /// <summary>
     /// Prompts the user to enter a tile position. 
     /// Returns true
-    /// </summary>
     private static bool TryGetTile(out (int row, int col) pos);
 
-    /// <summary>
     /// Given a piece, prompts the user to select a tile to move to or to type
     /// "BACK". If the user types back, this method return false. Otherwise,
     /// it returns true and the target parameter is set to the users choice.
-    /// </summary>
     private static bool TryTileSelect(IPiece piece, out (int row, int col) target);
 
-    /// <summary>
     /// Given a two character string of a position on the board, return
     /// its associated row, col values.
-    /// </summary>
-    /// <param name="tile"></param>
-    /// <returns></returns>
     private static (int, int) BoardPosToIndex(string tile);
 }
 ```
