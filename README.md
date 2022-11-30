@@ -1,4 +1,4 @@
-# Refactoring a Chess Program in C#
+# Refactoring a Chess Program in C# to use an Object Oriented Design
 
 I want to take you with me on a journey in which I refactor a Chess program that
 was written by a novice coder. The original source code is spaghetti code with
@@ -40,7 +40,7 @@ And now the long version...
 
 # Table of Contents
 
-- [Refactoring a Chess Program in C#](#refactoring-a-chess-program-in-c)
+- [Refactoring a Chess Program in C# to use an Object Oriented Design](#refactoring-a-chess-program-in-c-to-use-an-object-oriented-design)
 - [tl;dr;](#tldr)
 - [Table of Contents](#table-of-contents)
 - [The original post](#the-original-post)
